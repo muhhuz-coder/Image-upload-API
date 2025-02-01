@@ -17,14 +17,16 @@ export class S3Service {
   async uploadFile(file: Express.Multer.File): Promise<string> {
     const fileName = `${uuid()}-${file.originalname}`;
 
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET,
+    // Explicitly type the params object to be a PutObjectRequest
+    const params: AWS.S3.Types.PutObjectRequest = {
+      Bucket: process.env.AWS_S3_BUCKET as string, // Type assertion to string
       Key: fileName,
       Body: file.buffer,
-      ACL: 'public-read',
       ContentType: file.mimetype,
     };
+    
 
+    // Upload file to S3 and return the file URL
     const uploadResult = await this.s3.upload(params).promise();
     return uploadResult.Location; // Returns the file URL
   }
