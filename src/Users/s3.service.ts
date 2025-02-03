@@ -1,33 +1,37 @@
+//s3.service.ts
+
 import { Injectable } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import { v4 as uuid } from 'uuid';
-
+import { HttpException, HttpStatus } from '@nestjs/common';
 @Injectable()
 export class S3Service {
   private s3: AWS.S3;
 
   constructor() {
     this.s3 = new AWS.S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: process.env.AWS_REGION,
+      accessKeyId: 'AKIARWPFIK6LETVHKUFB',
+      secretAccessKey: "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",
+      region: "ap-southeast-2",
+
     });
   }
 
   async uploadFile(file: Express.Multer.File): Promise<string> {
     const fileName = `${uuid()}-${file.originalname}`;
 
-    // Explicitly type the params object to be a PutObjectRequest
     const params: AWS.S3.Types.PutObjectRequest = {
-      Bucket: process.env.AWS_S3_BUCKET as string, // Type assertion to string
+      Bucket: "uploadfile1221",
       Key: fileName,
       Body: file.buffer,
       ContentType: file.mimetype,
     };
-    
 
-    // Upload file to S3 and return the file URL
-    const uploadResult = await this.s3.upload(params).promise();
-    return uploadResult.Location; // Returns the file URL
-  }
+    try {
+      const uploadResult = await this.s3.upload(params).promise();
+      return uploadResult.Location;
+    } catch (error) {
+      throw new HttpException(`File upload failed: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }    
 }

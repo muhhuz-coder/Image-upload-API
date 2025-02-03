@@ -1,4 +1,4 @@
-
+//user.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersService } from './user.service';
@@ -10,5 +10,6 @@ import { S3Service } from './s3.service';
   imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersService,S3Service],
   controllers: [UsersController],
+  exports:[UsersService]
 })
 export class UsersModule {}
