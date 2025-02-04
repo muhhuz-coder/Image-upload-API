@@ -78,6 +78,6 @@ export class UsersService {
     }
 
     user.profileImageUrl = imageUrl;
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 }
