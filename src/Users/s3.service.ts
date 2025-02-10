@@ -3,9 +3,17 @@ import * as AWS from 'aws-sdk';
 import { v4 as uuid } from 'uuid';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
+// Add configuration object
+const S3_CONFIG = {
+  BUCKET_NAME: 'uploadfile1221',
+  ALLOWED_FILE_TYPES: ['image/jpeg', 'image/png', 'image/gif'],
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+};
+
 @Injectable()
 export class S3Service {
   private s3: AWS.S3;
+
 
   constructor() {
     this.s3 = new AWS.S3({
@@ -14,6 +22,23 @@ export class S3Service {
       region: 'ap-southeast-2',
     });
   }
+
+  private validateFile(file: Express.Multer.File) {
+    if (!S3_CONFIG.ALLOWED_FILE_TYPES.includes(file.mimetype)) {
+      throw new HttpException(
+        `File type not allowed. Allowed types: ${S3_CONFIG.ALLOWED_FILE_TYPES.join(', ')}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    if (file.size > S3_CONFIG.MAX_FILE_SIZE) {
+      throw new HttpException(
+        `File size too large. Maximum size: ${S3_CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
 
   async uploadFile(file: Express.Multer.File): Promise<string> {
     const fileName = `${uuid()}-${file.originalname}`;
@@ -58,3 +83,4 @@ export class S3Service {
   }
   
 }
+
